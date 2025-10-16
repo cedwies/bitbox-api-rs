@@ -12,10 +12,12 @@ use util::test_initialized_simulators;
 use bitbox_api::{btc::Xpub, pb};
 
 use bitcoin::bip32::DerivationPath;
+use bitcoin::opcodes::all;
 use bitcoin::psbt::Psbt;
 use bitcoin::secp256k1;
 use bitcoin::{
-    transaction, Amount, OutPoint, ScriptBuf, Sequence, Transaction, TxIn, TxOut, Witness,
+    blockdata::script::Builder, transaction, Amount, OutPoint, ScriptBuf, Sequence, Transaction,
+    TxIn, TxOut, Witness,
 };
 use miniscript::psbt::PsbtExt;
 
@@ -331,6 +333,109 @@ async fn test_btc_psbt_mixed_spend() {
 
         // Finalize, add witnesses.
         psbt.finalize_mut(&secp).unwrap();
+
+        // Verify the signed tx, including that all sigs/witnesses are correct.
+        verify_transaction(psbt);
+    })
+    .await
+}
+
+#[tokio::test]
+async fn test_btc_psbt_op_return() {
+    test_initialized_simulators(async |bitbox| {
+        if !semver::VersionReq::parse(">=9.24.0")
+            .unwrap()
+            .matches(bitbox.version())
+        {
+            // OP_RETURN outputs are supported from firmware v9.24.0.
+            return;
+        }
+
+        let secp = secp256k1::Secp256k1::new();
+        let fingerprint = util::simulator_xprv().fingerprint(&secp);
+
+        let input_path: DerivationPath = "m/84'/1'/0'/0/5".parse().unwrap();
+        let change_path: DerivationPath = "m/84'/1'/0'/1/0".parse().unwrap();
+
+        let input_pub = util::simulator_xpub_at(&secp, &input_path).to_pub();
+        let change_pub = util::simulator_xpub_at(&secp, &change_path).to_pub();
+
+        let prev_tx = Transaction {
+            version: transaction::Version::TWO,
+            lock_time: bitcoin::absolute::LockTime::ZERO,
+            input: vec![TxIn {
+                previous_output:
+                    "3131313131313131313131313131313131313131313131313131313131313131:0"
+                        .parse()
+                        .unwrap(),
+                script_sig: ScriptBuf::new(),
+                sequence: Sequence(0xFFFFFFFF),
+                witness: Witness::default(),
+            }],
+            output: vec![TxOut {
+                value: Amount::from_sat(50_000_000),
+                script_pubkey: ScriptBuf::new_p2wpkh(&input_pub.wpubkey_hash()),
+            }],
+        };
+
+        let op_return_data = b"hello world";
+        let op_return_script = Builder::new()
+            .push_opcode(all::OP_RETURN)
+            .push_slice(op_return_data)
+            .into_script();
+
+        let tx = Transaction {
+            version: transaction::Version::TWO,
+            lock_time: bitcoin::absolute::LockTime::ZERO,
+            input: vec![TxIn {
+                previous_output: OutPoint {
+                    txid: prev_tx.compute_txid(),
+                    vout: 0,
+                },
+                script_sig: ScriptBuf::new(),
+                sequence: Sequence(0xFFFFFFFF),
+                witness: Witness::default(),
+            }],
+            output: vec![
+                TxOut {
+                    value: Amount::from_sat(49_000_000),
+                    script_pubkey: ScriptBuf::new_p2wpkh(&change_pub.wpubkey_hash()),
+                },
+                TxOut {
+                    value: Amount::from_sat(0),
+                    script_pubkey: op_return_script.clone(),
+                },
+            ],
+        };
+
+        let mut psbt = Psbt::from_unsigned_tx(tx).unwrap();
+
+        psbt.inputs[0].non_witness_utxo = Some(prev_tx.clone());
+        psbt.inputs[0].witness_utxo = Some(prev_tx.output[0].clone());
+        psbt.inputs[0]
+            .bip32_derivation
+            .insert(input_pub.0, (fingerprint, input_path.clone()));
+
+        psbt.outputs[0]
+            .bip32_derivation
+            .insert(change_pub.0, (fingerprint, change_path.clone()));
+
+        bitbox
+            .btc_sign_psbt(
+                pb::BtcCoin::Tbtc,
+                &mut psbt,
+                None,
+                pb::btc_sign_init_request::FormatUnit::Default,
+            )
+            .await
+            .unwrap();
+
+        psbt.finalize_mut(&secp).unwrap();
+
+        let final_tx = psbt.clone().extract_tx_unchecked_fee_rate();
+        assert_eq!(final_tx.output.len(), 2);
+        assert_eq!(final_tx.output[1].value, Amount::from_sat(0));
+        assert_eq!(final_tx.output[1].script_pubkey, op_return_script);
 
         // Verify the signed tx, including that all sigs/witnesses are correct.
         verify_transaction(psbt);

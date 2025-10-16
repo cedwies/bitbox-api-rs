@@ -13,6 +13,8 @@ pub use bitcoin::{
     Script,
 };
 
+use bitcoin::blockdata::{opcodes, script::Instruction};
+
 #[cfg(feature = "wasm")]
 use enum_assoc::Assoc;
 
@@ -160,6 +162,8 @@ pub struct Payload {
 pub enum PayloadError {
     #[error("unrecognized pubkey script")]
     Unrecognized,
+    #[error("{0}")]
+    InvalidOpReturn(&'static str),
 }
 
 impl Payload {
@@ -190,6 +194,46 @@ impl Payload {
                 data: pkscript[2..].to_vec(),
                 output_type: pb::BtcOutputType::P2tr,
             })
+        } else if matches!(script.as_bytes().first(), Some(byte) if *byte == opcodes::all::OP_RETURN.to_u8())
+        {
+            let mut instructions = script.instructions_minimal();
+            match instructions.next() {
+                Some(Ok(Instruction::Op(op))) if op == opcodes::all::OP_RETURN => {}
+                _ => return Err(PayloadError::Unrecognized),
+            }
+
+            let payload = match instructions.next() {
+                None => {
+                    return Err(PayloadError::InvalidOpReturn(
+                        "naked OP_RETURN is not supported",
+                    ))
+                }
+                Some(Ok(Instruction::Op(op))) if op == opcodes::all::OP_PUSHBYTES_0 => Vec::new(),
+                Some(Ok(Instruction::PushBytes(push))) => push.as_bytes().to_vec(),
+                Some(Ok(_)) => {
+                    return Err(PayloadError::InvalidOpReturn(
+                        "no data push found after OP_RETURN",
+                    ))
+                }
+                Some(Err(_)) => {
+                    return Err(PayloadError::InvalidOpReturn(
+                        "failed to parse OP_RETURN payload",
+                    ))
+                }
+            };
+
+            match instructions.next() {
+                None => Ok(Payload {
+                    data: payload,
+                    output_type: pb::BtcOutputType::OpReturn,
+                }),
+                Some(Ok(_)) => Err(PayloadError::InvalidOpReturn(
+                    "only one data push supported after OP_RETURN",
+                )),
+                Some(Err(_)) => Err(PayloadError::InvalidOpReturn(
+                    "failed to parse OP_RETURN payload",
+                )),
+            }
         } else {
             Err(PayloadError::Unrecognized)
         }
@@ -206,8 +250,7 @@ impl TryFrom<&bitcoin::TxOut> for TxExternalOutput {
     type Error = PsbtError;
     fn try_from(value: &bitcoin::TxOut) -> Result<Self, Self::Error> {
         Ok(TxExternalOutput {
-            payload: Payload::from_pkscript(value.script_pubkey.as_bytes())
-                .map_err(|_| PsbtError::UnknownOutputType)?,
+            payload: Payload::from_pkscript(value.script_pubkey.as_bytes())?,
             value: value.value.to_sat(),
         })
     }
@@ -251,6 +294,18 @@ pub enum PsbtError {
     #[error("Unrecognized/unsupported output type.")]
     #[cfg_attr(feature = "wasm", assoc(js_code = "unknown-output-type"))]
     UnknownOutputType,
+    #[error("Invalid OP_RETURN script: {0}")]
+    #[cfg_attr(feature = "wasm", assoc(js_code = "invalid-op-return"))]
+    InvalidOpReturn(&'static str),
+}
+
+impl From<PayloadError> for PsbtError {
+    fn from(value: PayloadError) -> Self {
+        match value {
+            PayloadError::Unrecognized => PsbtError::UnknownOutputType,
+            PayloadError::InvalidOpReturn(message) => PsbtError::InvalidOpReturn(message),
+        }
+    }
 }
 
 enum OurKey {
@@ -753,6 +808,15 @@ impl<R: Runtime> PairedBitBox<R> {
         if transaction.script_configs.iter().any(is_taproot_simple) {
             self.validate_version(">=9.10.0")?; // taproot since 9.10.0
         }
+        if transaction.outputs.iter().any(|output| {
+            matches!(
+                output,
+                TxOutput::External(tx_output)
+                    if tx_output.payload.output_type == pb::BtcOutputType::OpReturn
+            )
+        }) {
+            self.validate_version(">=9.24.0")?;
+        }
 
         let mut sigs: Vec<Vec<u8>> = Vec::new();
 
@@ -1181,6 +1245,62 @@ mod tests {
                 output_type: pb::BtcOutputType::P2tr,
             }
         );
+
+        // OP_RETURN empty (OP_0)
+        let pkscript = hex::decode("6a00").unwrap();
+        assert_eq!(
+            Payload::from_pkscript(&pkscript).unwrap(),
+            Payload {
+                data: Vec::new(),
+                output_type: pb::BtcOutputType::OpReturn,
+            }
+        );
+
+        // OP_RETURN with data push
+        let pkscript = hex::decode("6a03aabbcc").unwrap();
+        assert_eq!(
+            Payload::from_pkscript(&pkscript).unwrap(),
+            Payload {
+                data: vec![0xaa, 0xbb, 0xcc],
+                output_type: pb::BtcOutputType::OpReturn,
+            }
+        );
+
+        // OP_RETURN with 80-byte payload (PUSHDATA1)
+        let mut pkscript = vec![opcodes::all::OP_RETURN.to_u8(), 0x4c, 0x50];
+        pkscript.extend(std::iter::repeat_n(0xaa, 80));
+        assert_eq!(
+            Payload::from_pkscript(&pkscript).unwrap(),
+            Payload {
+                data: vec![0xaa; 80],
+                output_type: pb::BtcOutputType::OpReturn,
+            }
+        );
+
+        // Invalid OP_RETURN scripts
+        let pkscript = hex::decode("6a").unwrap();
+        assert!(matches!(
+            Payload::from_pkscript(&pkscript),
+            Err(PayloadError::InvalidOpReturn(
+                "naked OP_RETURN is not supported"
+            ))
+        ));
+
+        let pkscript = hex::decode("6a6a").unwrap();
+        assert!(matches!(
+            Payload::from_pkscript(&pkscript),
+            Err(PayloadError::InvalidOpReturn(
+                "no data push found after OP_RETURN"
+            ))
+        ));
+
+        let pkscript = hex::decode("6a0000").unwrap();
+        assert!(matches!(
+            Payload::from_pkscript(&pkscript),
+            Err(PayloadError::InvalidOpReturn(
+                "only one data push supported after OP_RETURN"
+            ))
+        ));
     }
 
     // Test that a PSBT containing only p2wpkh inputs is converted correctly to a transaction to be

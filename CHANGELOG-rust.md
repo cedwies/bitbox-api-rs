@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.11.0
+- btc: add support for OP_RETURN outputs
+
 ## 0.10.0
 - Add `btc_xpubs()`
 
