@@ -1190,6 +1190,7 @@ pub enum BtcOutputType {
     P2wpkh = 3,
     P2wsh = 4,
     P2tr = 5,
+    OpReturn = 6,
 }
 impl BtcOutputType {
     /// String value of the enum field names used in the ProtoBuf definition.
@@ -1204,6 +1205,7 @@ impl BtcOutputType {
             Self::P2wpkh => "P2WPKH",
             Self::P2wsh => "P2WSH",
             Self::P2tr => "P2TR",
+            Self::OpReturn => "OP_RETURN",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.
@@ -1215,6 +1217,7 @@ impl BtcOutputType {
             "P2WPKH" => Some(Self::P2wpkh),
             "P2WSH" => Some(Self::P2wsh),
             "P2TR" => Some(Self::P2tr),
+            "OP_RETURN" => Some(Self::OpReturn),
             _ => None,
         }
     }

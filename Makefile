@@ -10,6 +10,8 @@ example-btc-signtx:
 	cargo run --example btc_signtx --features=usb,tokio/rt,tokio/macros
 example-btc-psbt:
 	cargo run --example btc_sign_psbt --features=usb,tokio/rt,tokio/macros
+example-btc-sign-op-return:
+	cargo run --example btc_sign_op_return --features=usb,tokio/rt,tokio/macros
 example-btc-sign-msg:
 	cargo run --example btc_sign_msg --features=usb,tokio/rt,tokio/macros
 example-btc-miniscript:

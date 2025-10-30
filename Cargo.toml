@@ -1,7 +1,7 @@
 [package]
 name = "bitbox-api"
 authors = ["Marko Bencun <benma@bitbox.swiss>"]
-version = "0.10.0"
+version = "0.11.0"
 homepage = "https://bitbox.swiss/"
 repository = "https://github.com/BitBoxSwiss/bitbox-api-rs/"
 readme = "README-rust.md"
@@ -73,6 +73,10 @@ required-features = ["usb", "tokio/rt", "tokio/macros"]
 
 [[example]]
 name = "btc_sign_psbt"
+required-features = ["usb", "tokio/rt", "tokio/macros"]
+
+[[example]]
+name = "btc_sign_op_return"
 required-features = ["usb", "tokio/rt", "tokio/macros"]
 
 [[example]]
