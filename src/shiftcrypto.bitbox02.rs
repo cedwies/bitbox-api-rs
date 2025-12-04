@@ -257,6 +257,10 @@ pub struct SetPasswordRequest {
 #[cfg_attr(feature = "wasm", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "wasm", serde(rename_all = "camelCase"))]
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
+pub struct ChangePasswordRequest {}
+#[cfg_attr(feature = "wasm", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "wasm", serde(rename_all = "camelCase"))]
+#[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct BluetoothToggleEnabledRequest {}
 #[cfg_attr(feature = "wasm", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "wasm", serde(rename_all = "camelCase"))]
@@ -2236,7 +2240,7 @@ pub struct Success {}
 pub struct Request {
     #[prost(
         oneof = "request::Request",
-        tags = "2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 25, 26, 27, 28, 29"
+        tags = "2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 25, 26, 27, 28, 29, 30"
     )]
     pub request: ::core::option::Option<request::Request>,
 }
@@ -2302,6 +2306,8 @@ pub mod request {
         Bip85(super::Bip85Request),
         #[prost(message, tag = "29")]
         Bluetooth(super::BluetoothRequest),
+        #[prost(message, tag = "30")]
+        ChangePassword(super::ChangePasswordRequest),
     }
 }
 #[cfg_attr(feature = "wasm", derive(serde::Serialize, serde::Deserialize))]

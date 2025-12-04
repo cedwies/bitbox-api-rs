@@ -400,6 +400,19 @@ impl<R: Runtime> PairedBitBox<R> {
         }
     }
 
+    /// Invokes the password change workflow on the device.
+    /// Requires firmware version >=9.25.0.
+    pub async fn change_password(&self) -> Result<(), Error> {
+        self.validate_version(">=9.25.0")?;
+        match self
+            .query_proto(Request::ChangePassword(pb::ChangePasswordRequest {}))
+            .await?
+        {
+            Response::Success(_) => Ok(()),
+            _ => Err(Error::UnexpectedResponse),
+        }
+    }
+
     /// Invokes the BIP85-BIP39 workflow on the device, letting the user select the number of words
     /// (12, 28, 24) and an index and display a derived BIP-39 mnemonic.
     pub async fn bip85_app_bip39(&self) -> Result<(), Error> {
