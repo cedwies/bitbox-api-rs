@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 fn multithreading_type_check<T: Sync + Send>(_t: &T) {}
 
 async fn demo<R: bitbox_api::runtime::Runtime + Sync + Send>() {

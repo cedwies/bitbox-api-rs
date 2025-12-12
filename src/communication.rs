@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 use super::u2fframing::{self, U2FFraming};
 use crate::runtime::Runtime;
 use crate::util::Threading;

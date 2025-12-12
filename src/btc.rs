@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 //! Functions and methods related to Bitcoin.
 
 use crate::runtime::Runtime;

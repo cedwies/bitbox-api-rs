@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 async fn demo<R: bitbox_api::runtime::Runtime + Sync + Send>() {
     let noise_config = Box::new(bitbox_api::NoiseConfigNoCache {});
     let bitbox = bitbox_api::BitBox::<R>::from_simulator(None, noise_config)

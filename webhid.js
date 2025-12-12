@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 export async function jsSleep(ms) {
   await new Promise(resolve => setTimeout(resolve, ms));
 }

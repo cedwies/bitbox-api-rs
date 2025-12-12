@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 use async_trait::async_trait;
 
 #[cfg_attr(feature = "multithreaded", async_trait)]

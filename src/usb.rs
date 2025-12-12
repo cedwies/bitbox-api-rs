@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 use super::constants::{PRODUCT_ID, VENDOR_ID};
 use async_trait::async_trait;
 use thiserror::Error;
