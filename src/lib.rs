@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 //! Rust BitBox hardware wallet client library.
 
 #[cfg(all(feature = "wasm", feature = "multithreaded"))]

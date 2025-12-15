@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 const EIP712_MSG: &str = r#"
         {
     "types": {

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 npm_version=$(shell cat NPM_VERSION)
 
 build-protos:

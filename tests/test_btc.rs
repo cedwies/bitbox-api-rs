@@ -1,4 +1,6 @@
 #![cfg(feature = "simulator")]
+// SPDX-License-Identifier: Apache-2.0
+
 // Simulators only run on linux/amd64.
 #![cfg(all(target_os = "linux", target_arch = "x86_64"))]
 

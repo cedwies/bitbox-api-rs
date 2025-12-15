@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import { ChangeEvent, FormEvent, useState } from 'react'
 import * as bitbox from 'bitbox-api';
 import hexToArrayBuffer from 'hex-to-array-buffer'

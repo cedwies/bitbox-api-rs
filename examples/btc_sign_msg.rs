@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 use bitbox_api::pb;
 
 async fn signmsg<R: bitbox_api::runtime::Runtime>() {

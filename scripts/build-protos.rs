@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 //! ```cargo
 //! [dependencies]
 //! # If you change this, also change the version of prost in Cargo.toml.

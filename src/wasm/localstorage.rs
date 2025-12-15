@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 pub fn get<T: serde::de::DeserializeOwned>(key: &str) -> Result<T, ()> {
     let window = web_sys::window().ok_or(())?;
     let local_storage = match window.local_storage() {

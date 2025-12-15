@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 // Since each integration test file is compiled independently and not all integration tests use all
 // of the util functions, the ones that are not used by all integration test files produce a
 // warning.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 use crate::error::Error;
 
 pub const HARDENED: u32 = 0x80000000;

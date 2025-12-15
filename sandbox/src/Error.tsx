@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import * as bitbox from 'bitbox-api';
 import { ErrorNotification } from './ErrorNotification';
 import { useEffect, useState } from 'react';

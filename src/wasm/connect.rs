@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 use super::{noise, types::TsOnCloseCb, BitBox, JavascriptError};
 use crate::communication;
 use wasm_bindgen::prelude::*;

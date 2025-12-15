@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 pub fn remove_leading_zeroes(list: &[u8]) -> Vec<u8> {
     if let Some(first_non_zero) = list.iter().position(|&x| x != 0) {
         list[first_non_zero..].to_vec()
