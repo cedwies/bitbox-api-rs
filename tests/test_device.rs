@@ -44,3 +44,21 @@ async fn test_root_fingerprint() {
     })
     .await
 }
+
+#[tokio::test]
+async fn test_change_password() {
+    test_initialized_simulators(async |bitbox| {
+        if semver::VersionReq::parse(">=9.25.0")
+            .unwrap()
+            .matches(bitbox.version())
+        {
+            assert!(bitbox.change_password().await.is_ok());
+        } else {
+            assert!(matches!(
+                bitbox.change_password().await,
+                Err(bitbox_api::error::Error::Version(">=9.25.0"))
+            ));
+        }
+    })
+    .await
+}

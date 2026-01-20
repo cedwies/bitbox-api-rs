@@ -84,6 +84,32 @@ function ShowMnemonic({ bb02 } : Props) {
   );
 }
 
+function ChangePassword({ bb02 } : Props) {
+  const [running, setRunning] = useState(false);
+  const [err, setErr] = useState<bitbox.Error>();
+
+  const actionChangePassword = async (e: FormEvent) => {
+    e.preventDefault();
+    setRunning(true);
+    setErr(undefined);
+    try {
+      await bb02.changePassword();
+    } catch (err) {
+      setErr(bitbox.ensureError(err));
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  return (
+    <>
+      <h4>Change Password</h4>
+      <button onClick={actionChangePassword} disabled={running}>Change password</button>
+      <ShowError err={err} />
+    </>
+  );
+}
+
 function Bip85AppBip39({ bb02 } : Props) {
   const [running, setRunning] = useState(false);
   const [err, setErr] = useState<bitbox.Error>();
@@ -124,6 +150,9 @@ export function General({ bb02 } : Props) {
       </div>
       <div className="action">
         <Bip85AppBip39 bb02={bb02} />
+      </div>
+      <div className="action">
+        <ChangePassword bb02={bb02} />
       </div>
     </>
   );

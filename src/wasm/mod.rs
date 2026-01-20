@@ -238,6 +238,12 @@ impl PairedBitBox {
         Ok(self.device.show_mnemonic().await?)
     }
 
+    /// Invokes the password change workflow on the device.
+    #[wasm_bindgen(js_name = changePassword)]
+    pub async fn change_password(&self) -> Result<(), JavascriptError> {
+        Ok(self.device.change_password().await?)
+    }
+
     /// Retrieves an xpub. For non-standard keypaths, a warning is displayed on the BitBox even if
     /// `display` is false.
     #[wasm_bindgen(js_name = btcXpub)]
