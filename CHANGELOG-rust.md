@@ -1,10 +1,8 @@
 # Changelog
 
-## 0.12.0
-- add `change_password()` to change the device password (firmware >=9.25.0)
-
 ## 0.11.0
 - btc: add support for OP_RETURN outputs
+- add `change_password()` to change the device password (firmware >=9.25.0)
 
 ## 0.10.0
 - Add `btc_xpubs()`

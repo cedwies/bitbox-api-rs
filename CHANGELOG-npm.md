@@ -1,13 +1,11 @@
 # Changelog
 
-## 0.13.0
-- add `changePassword()` to change the device password (firmware >=9.25.0)
-
 ## 0.12.0
 - btc: add support for OP_RETURN outputs
+- add `changePassword()` to change the device password (firmware >=9.25.0)
 
 ## 0.11.0
-- Add `btcXpubs()`
+- btc: add support for OP_RETURN outputs
 
 ## 0.10.1
 - package.json: use "main" instead of "module" to fix compatiblity with vitest
