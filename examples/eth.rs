@@ -96,6 +96,7 @@ async fn eth_demo<R: bitbox_api::runtime::Runtime>() {
             &"m/44'/60'/0'/0/0".try_into().unwrap(),
             &raw_tx.as_slice().try_into().unwrap(),
             None,
+            None,
         )
         .await
         .unwrap();

@@ -487,6 +487,7 @@ impl PairedBitBox {
                 &keypath.try_into()?,
                 &tx.try_into()?,
                 address_case.map(TryInto::try_into).transpose()?,
+                None,
             )
             .await?;
 

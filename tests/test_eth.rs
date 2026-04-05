@@ -229,7 +229,7 @@ async fn test_eth_sign_1559_transaction_nonstreaming() {
         };
 
         let signature = paired_bitbox
-            .eth_sign_1559_transaction(&"m/44'/60'/0'/0/0".try_into().unwrap(), &tx, None)
+            .eth_sign_1559_transaction(&"m/44'/60'/0'/0/0".try_into().unwrap(), &tx, None, None)
             .await
             .unwrap();
         assert_eq!(signature.len(), 65);
@@ -263,7 +263,7 @@ async fn test_eth_sign_1559_transaction_streaming() {
         };
 
         let signature = paired_bitbox
-            .eth_sign_1559_transaction(&"m/44'/60'/0'/0/0".try_into().unwrap(), &tx, None)
+            .eth_sign_1559_transaction(&"m/44'/60'/0'/0/0".try_into().unwrap(), &tx, None, None)
             .await
             .unwrap();
         assert_eq!(signature.len(), 65);

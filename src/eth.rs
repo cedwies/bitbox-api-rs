@@ -563,17 +563,19 @@ impl<R: Runtime> PairedBitBox<R> {
     /// Signs an Ethereum type 2 transaction according to EIP 1559. It returns a 65 byte signature (R, S, and 1 byte recID).
     /// The `tx` param can be constructed manually or parsed from a raw transaction using
     /// `raw_tx_slice.try_into()` (`rlp` feature required).
+    /// If `payment_request` is provided, firmware v9.26.0 or newer is required.
     pub async fn eth_sign_1559_transaction(
         &self,
         keypath: &Keypath,
         tx: &EIP1559Transaction,
         address_case: Option<pb::EthAddressCase>,
+        payment_request: Option<pb::BtcPaymentRequestRequest>,
     ) -> Result<[u8; 65], Error> {
         // EIP1559 is suported from v9.16.0
         self.validate_version(">=9.16.0")?;
 
         let use_streaming = tx.data.len() > STREAMING_THRESHOLD;
-        if use_streaming {
+        if use_streaming || payment_request.is_some() {
             self.validate_version(">=9.26.0")?;
         }
 
@@ -603,7 +605,7 @@ impl<R: Runtime> PairedBitBox<R> {
             } else {
                 0
             },
-            payment_request: None,
+            payment_request,
         });
 
         let mut response = self.query_proto_eth(request).await?;
