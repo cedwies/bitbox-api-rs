@@ -603,6 +603,7 @@ impl<R: Runtime> PairedBitBox<R> {
             } else {
                 0
             },
+            payment_request: None,
         });
 
         let mut response = self.query_proto_eth(request).await?;
